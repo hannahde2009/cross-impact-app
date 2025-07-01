@@ -12,7 +12,7 @@ if "data" not in st.session_state:
     st.session_state.page = 0
 
 data = st.session_state.data
-x_factors = sorted(data["X_Faktor"].dropna().unique().tolist())
+x_factors = []
 current_x = x_factors[st.session_state.page]
 page_data = data[data["X_Faktor"] == current_x].reset_index(drop=True)
 
