@@ -4,11 +4,11 @@ import pandas as pd
 st.set_page_config(page_title="Cross-Impact-Matrix", layout="wide")
 
 @st.cache_data
-def load_default():
-    return pd.read_csv("cross_impact_data_filtered.csv")
+def load_data():
+    return pd.read_csv("cross_impact_data_final.csv")
 
 if "data" not in st.session_state:
-    st.session_state.data = load_default()
+    st.session_state.data = load_data()
     st.session_state.page = 0
 
 data = st.session_state.data
@@ -17,10 +17,25 @@ current_x = x_factors[st.session_state.page]
 page_data = data[data["X_Faktor"] == current_x].reset_index(drop=True)
 
 st.title("Cross-Impact-Matrix – Modellprojekte")
-st.subheader(f"Seite {st.session_state.page + 1} von {len(x_factors)} – Faktor: {current_x}")
 
+# 📋 Erklärung oben
+with st.expander("ℹ️ Hinweis zur Bewertung", expanded=True):
+    st.markdown("""
+    Für jede Kombination:  
+    **Wie stark beeinflusst die Veränderung des Faktors (links)**  
+    **die Veränderung des Ziels (oben)?**
+
+    **Wähle einen Wert:**
+    - `0` = kein Einfluss  
+    - `1` = geringer Einfluss  
+    - `10` = moderater Einfluss  
+    - `100` = starker Einfluss
+    """)
+
+# Fortschrittsanzeige
+st.subheader(f"Seite {st.session_state.page + 1} von {len(x_factors)} – Faktor: {current_x}")
 progress = int(((st.session_state.page + 1) / len(x_factors)) * 100)
-st.progress(progress, text=f"{progress}% ausgefüllt")
+st.progress(progress)
 
 options = ["", "0", "1", "10", "100"]
 new_values = []
@@ -31,7 +46,6 @@ for idx, row in page_data.iterrows():
     antwort = st.selectbox(frage, options, index=options.index(default), key=f"frage_{current_x}_{idx}")
     new_values.append(antwort)
 
-# Antworten übernehmen
 data.loc[data["X_Faktor"] == current_x, "Wert"] = new_values
 
 col1, col2, col3 = st.columns([1, 2, 1])
@@ -48,6 +62,7 @@ with col3:
         csv_ready = data.to_csv(index=False).encode("utf-8")
         st.download_button("⬇️ Gesamte Matrix herunterladen", csv_ready, "cross_impact_output.csv", "text/csv")
 
+# Speicheroptionen
 st.divider()
 st.markdown("💾 **Optionen zur Zwischenspeicherung:**")
 save_csv = data.to_csv(index=False).encode("utf-8")
